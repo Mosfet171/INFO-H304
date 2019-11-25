@@ -7,8 +7,6 @@ for the INFP-H304 course, by Alissa Komino, Jean-Charles Nsangolo and Arkady Mos
 #include <chrono>
 #include "protlib.hh"
 
-#define MAX_LEN 120
-
 using namespace std;
  
 int main (int argc, char** argv)
