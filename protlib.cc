@@ -10,6 +10,13 @@ int bigToLittle(unsigned char buffer[], int n){
     return result;
 }
 
+unsigned int readIndexFile(unsigned char * buffer, char sizeOfBuffer, FILE * indexFile){
+    fread(buffer,1,sizeOfBuffer,indexFile);
+    unsigned int returnLittle = bigToLittle(buffer,sizeOfBuffer);
+    return returnLittle;
+}
+
+
 std::string charToString(char* a, int size) 
 { 
     int i; 

@@ -24,7 +24,7 @@ int main (int argc, char** argv)
     FILE * fquery;
     int i;
     unsigned char buffer[4];
-    int sob = sizeof(buffer);
+    char sob = sizeof(buffer);
 
     cout<< "*---                                 PROTY v0.5                                   ---*" << endl
         << "*---             Sequence alignment program for peptides or proteins              ---*" << endl
@@ -44,40 +44,30 @@ int main (int argc, char** argv)
         exit(1);
     }
     
-    fread(&buffer,1,sob,fin);
-    int version = bigToLittle(buffer,sob); // Version
-
-    fread(&buffer,1,sob,fin);
-    int intdbtype = bigToLittle(buffer,sob); // Type (DNA or Protein)
+    unsigned int version = readIndexFile(buffer,sob,fin); // Version
+    unsigned int intdbtype = readIndexFile(buffer,sob,fin); // Type (DNA or Protein)
     string dbtype;
     if (intdbtype == 1) {
         dbtype = "Protein";
     } else {
         dbtype = "DNA";
     }
-    
-    fread(&buffer,1,sob,fin);
-    int len_title = bigToLittle(buffer,sob); // Length 'T' of title
+    unsigned int len_title = readIndexFile(buffer,sob,fin); // Length 'T' of title
     char titlebuffer[len_title];
-
     fread(&titlebuffer,1,len_title,fin);
     string title = charToString(titlebuffer,len_title); // Title
 
-    fread(&buffer,1,sob,fin);
-    int len_timestamp = bigToLittle(buffer,sob); // Length 'S' of timestamp
+    unsigned int len_timestamp = readIndexFile(buffer,sob,fin); // Length 'S' of timestamp
     char timestampbuffer[len_timestamp];
-
     fread(&timestampbuffer,1,len_timestamp,fin);
     string timestamp = charToString(timestampbuffer,len_timestamp); // Timestamp
 
-    fread(&buffer,1,sob,fin);
-    long int num_seq = bigToLittle(buffer,sob); // Number of sequences
+    unsigned int num_seq = readIndexFile(buffer,sob,fin); // Number of sequences
 
     unsigned long long int num_residue; // Using long long because dealing with a 8 byte int here (and definitely positive hence unsigned)
     fread(&num_residue,1,8,fin); // Number of residues
 
-    fread(&buffer,1,sob,fin);
-    int len_maxseq = bigToLittle(buffer,sob); // Length of longest sequence
+    unsigned int len_maxseq = readIndexFile(buffer,sob,fin); // Length of longest sequence
 
     // ****************************** OUTPUT PART ****************************** //
         cout << endl
