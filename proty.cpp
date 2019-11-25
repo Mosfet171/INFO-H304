@@ -220,30 +220,43 @@ int main (int argc, char** argv)
     fseek(fhr,startHeaderString,SEEK_SET);
     fread(&headerStringBuffer,1,lenHeaderString,fhr);
 
+    // Extracting the title (assuming it is the first visible string) from the header binary file
     // See NCBI BLAST Database format for more information
-    /*
-    switch(headerStringBuffer[6]){
-        case 26: // 1A in hex, 
-            if (headerStringBuffer[7] > 128){
-                char lenlenHeaderTitle = headerStringBuffer[7]-128;
-                int lenHeaderTitle = headerStringBuffer[7+]
-            }
-            char lenHeaderTitle = headerStringBuffer[7];
+    i=0;
+    string headerTitle;
+    while (headerStringBuffer[i] not_eq 26){
+        i++;
     }
-    */
+    i++;
+    if(headerStringBuffer[i] > 127){
+        char lenlenString = headerStringBuffer[i]-128;
+        i++;
+        int j;
+        unsigned char lenHeaderTitleBuffer[lenlenString];
+        for (j=0;j<lenlenString;j++){
+            lenHeaderTitleBuffer[j] = headerStringBuffer[i+j];
+        }
+        i += j;
+        int lenHeaderTitle = bigToLittle(lenHeaderTitleBuffer,j);
+        char headerTitleBuffer[lenHeaderTitle];
+        for (j=0;j<lenHeaderTitle;j++){
+            headerTitleBuffer[j] = headerStringBuffer[i+j];
+        }
+        headerTitle = charToString(headerTitleBuffer,lenHeaderTitle);
+    } else {
+        int j;
+        char lenHeaderTitle = headerStringBuffer[i];
+        i++;
+        char headerTitleBuffer[lenHeaderTitle];
+        for (j=0;j<lenHeaderTitle;j++){
+            headerTitleBuffer[j] = headerStringBuffer[i+j];
+        }
+        headerTitle = charToString(headerTitleBuffer,lenHeaderTitle);
+    }
     
-
-    cout << endl 
-        << startHeaderString << endl
-        << endHeaderString << endl 
-        << lenHeaderString << endl
-        << (int)headerStringBuffer[4] << "\t" << (int)headerStringBuffer[5] << endl
+    cout << headerTitle << endl
         << endl;
 
-    fseek(fhr,1434,SEEK_SET);
-    char buffer2;
-    fread(&buffer2,1,1,fhr);
-    cout << (int)buffer2+256 << endl;
 
     fclose(fin);
     fclose(fsq);
