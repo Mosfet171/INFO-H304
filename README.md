@@ -18,3 +18,4 @@
 ## 99. Notes
 * The code is absolutely not optimized yet, as many things are treated as text, which loses the point of working with binary file;
 * Moreover, the usage of the std::string is also a loss in performance as everything could be done with simple 'char's, it is however simpler to use and for the preliminary project there is no real business in optimizing the code.
+* For now, the code syntax is not consistent, but yet understandable (`len_query` but `lenHeader`... :D ) 
