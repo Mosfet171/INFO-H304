@@ -4,7 +4,7 @@ for the INFP-H304 course, by Alissa Komino, Jean-Charles Nsangolo and Arkady Mos
 #include <iostream>
 #include <cstdio>
 #include <string>
-#include <vector>
+#include <chrono>
 #include "protlib.hh"
 
 #define MAX_LEN 120
@@ -27,6 +27,14 @@ int main (int argc, char** argv)
     int i;
     unsigned char buffer[4];
     int sob = sizeof(buffer);
+
+    cout<< "*---                                 PROTY v0.5                                   ---*" << endl
+        << "*---             Sequence alignment program for peptides or proteins              ---*" << endl
+        << "*---                         v0.x : Exact sequence search                         ---*" << endl
+        << "*---              v1.x : Search using the Smith-Waterman algorithm                ---*" << endl
+        << "*--- For the course 'INFO-H304 - Compléments de programmation et d'algorithmique' ---*" << endl
+        << "*---          By Alissa Komino, Jean-Charles Nsangolo and Arkady Mospan.          ---*" << endl
+        << endl;
 
     // ------------------------------ DATABASE INFO ------------------------------ //
     // --------------------------------------------------------------------------- //
@@ -86,6 +94,8 @@ int main (int argc, char** argv)
         << endl;
 
 
+
+
     // ----------------------------- QUERY INFO --------------------------------- //
     // -------------------------------------------------------------------------- //
 
@@ -99,12 +109,15 @@ int main (int argc, char** argv)
         exit(1);
     }
     if (queryname.substr(queryname.length()-5,5) == "fasta"){
-        char querytitle[1000];
-        fgetc(fquery);
-        fscanf(fquery,"%[^\n]",querytitle);
-        cout << "Query descritpion : " << querytitle << endl
-            << endl;
+        if ((fgetc(fquery) == '>')){
+            char querytitle[1000];
+            fscanf(fquery,"%[^\n]",querytitle);
+            cout << "Query descritpion : " << querytitle << endl;
+        } else {
+            cout << "Fake or corrupted FASTA file ... Sneaky Raccoon" << endl; 
+        }
     }
+    cout << endl; 
 
     // Transforming it into pure continued string (without \n nor \r)
     int c;
@@ -126,6 +139,8 @@ int main (int argc, char** argv)
     char v[28] = {'-','A','B','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','X','Y','Z','U','*','Q','J'};
 
     int len_query = query.size();
+
+
 
 
     // ----------------------------- REAL BUSINESS ----------------------------- //
@@ -153,6 +168,7 @@ int main (int argc, char** argv)
         dbsubstr += v[(int)substring[i]];
     }
 
+    auto start = std::chrono::high_resolution_clock::now();
     // Comparison code between query and string in database
     unsigned char key_bin;
     int found_pos = 0;
@@ -167,7 +183,9 @@ int main (int argc, char** argv)
         dbsubstr.erase(0,1);
         found_pos ++;
     }
-    cout << "Sequence found in database in " << 0 << " seconds" << endl;
+    auto stop = std::chrono::high_resolution_clock::now(); 
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    cout << "Sequence found in database in " << duration.count() << " miliseconds" << endl;
     // Getting the position of the beggining of the Header offset table
     long int headerTableInitPos = ftell(fin); 
 
