@@ -1,8 +1,14 @@
 #include <string>
 #include "protlib.hh"
 
-int bigToLittle(unsigned char buffer[4]){
-    int result = (int)buffer[0]<<24 | (int)buffer[1]<<16 | (int)buffer[2]<<8 | (int)buffer[3];
+int bigToLittle(unsigned char buffer[], int n){
+    int i;
+    int result = (int)buffer[0]<<(n-1)*8;
+    for (i=1;i<4;i++){
+        result = result | (int)buffer[i]<<(n-1-i)*8;
+    }
+    
+    //int result = (int)buffer[0]<<24 | (int)buffer[1]<<16 | (int)buffer[2]<<8 | (int)buffer[3];
     return result;
 }
 

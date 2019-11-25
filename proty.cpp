@@ -43,11 +43,13 @@ int main (int argc, char** argv)
 
     // Declaring variables
     FILE * fin;
-    FILE * fseq;
+    FILE * fsq;
+    FILE * fhr;
     FILE * fquery;
     int i;
     // char a[10];
     unsigned char buffer[4];
+    int sob = sizeof(buffer);
 
     // Extracting database info from 'index' file
     string indexname = argv[1]+string(".pin");
@@ -56,12 +58,12 @@ int main (int argc, char** argv)
         cout << "Opening of 'index' file impossible." << endl;
         exit(1);
     }
-       
-    fread(&buffer,1,4,fin);
-    int version = bigToLittle(buffer); // Version
+    
+    fread(&buffer,1,sob,fin);
+    int version = bigToLittle(buffer,sob); // Version
 
-    fread(&buffer,1,4,fin);
-    int intdbtype = bigToLittle(buffer); // Type (DNA or Protein)
+    fread(&buffer,1,sob,fin);
+    int intdbtype = bigToLittle(buffer,sob); // Type (DNA or Protein)
     string dbtype;
     if (intdbtype == 1) {
         dbtype = "Protein";
@@ -71,33 +73,34 @@ int main (int argc, char** argv)
         dbtype = "DNA";
     }
     
-    fread(&buffer,1,4,fin);
-    int len_title = bigToLittle(buffer); // Length 'T' of title
+    fread(&buffer,1,sob,fin);
+    int len_title = bigToLittle(buffer,sob); // Length 'T' of title
     char titlebuffer[len_title];
 
     fread(&titlebuffer,1,len_title,fin);
     string title = charToString(titlebuffer,len_title); // Title
 
-    fread(&buffer,1,4,fin);
-    int len_timestamp = bigToLittle(buffer); // Length 'S' of timestamp
+    fread(&buffer,1,sob,fin);
+    int len_timestamp = bigToLittle(buffer,sob); // Length 'S' of timestamp
     char timestampbuffer[len_timestamp];
 
     fread(&timestampbuffer,1,len_timestamp,fin);
     string timestamp = charToString(timestampbuffer,len_timestamp); // Timestamp
 
-    fread(&buffer,1,4,fin);
-    int num_seq = bigToLittle(buffer); // Number of sequences
+    fread(&buffer,1,sob,fin);
+    long int num_seq = bigToLittle(buffer,sob); // Number of sequences
 
-    unsigned long long int num_residue;
+    unsigned long long int num_residue; // Using long long because dealing with a 8 byte int here (and definitely positive)
     fread(&num_residue,1,8,fin); // Number of residues
 
-    fread (&buffer,1,4,fin);
-    int len_maxseq = bigToLittle(buffer); // Length of longest sequence
+    fread(&buffer,1,sob,fin);
+    int len_maxseq = bigToLittle(buffer,sob); // Length of longest sequence
 
     // ---------- CONTROL PART ---------- //
     cout << endl
         << "Version : " << version << endl
         << "DB type : " << dbtype << endl 
+        << "Title length : " << len_title << endl
         << "File title : " << title << endl 
         << "Timestamp : " << timestamp << endl
         << "Number of sequences : " << num_seq << endl
@@ -109,15 +112,21 @@ int main (int argc, char** argv)
     // Extracting query sequence
     string queryname = argv[2];
     fquery = fopen(queryname.c_str(),"r");
+    if (fquery == NULL){
+        cout << "Opening of 'query' file impossible." << endl;
+        exit(1);
+    }
     if (queryname.substr(queryname.length()-5,5) == "fasta"){
         char querytitle[1000];
         fscanf(fquery,"%[^\n]",querytitle);
-        cout << querytitle << endl;
+        cout << "Query title : " << querytitle << endl;
     }
+
+    // Transforming it into pure continued string (without \n nor \r)
     int c;
     string query;
     while ((c = getc(fquery)) != EOF){
-        if ((c not_eq '\n')){
+        if ((c not_eq '\n' && c not_eq '\r')){
             query += c;
         }
     }
@@ -132,70 +141,113 @@ int main (int argc, char** argv)
     // Int to char
     char v[28] = {'-','A','B','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','X','Y','Z','U','*','Q','J'};
 
-    char test = v[27];
-    cout << test << endl;
     int len_query = query.size();
-    cout << len_query << endl ;
 
     // ----------------------------- REAL BUSINESS ----------------------------- //
+
+    /* This part can obviously be done in another way, as transforming everything to a string from the std::string
+    package is maybe not the best option memory-ly speaking; however, at least for the preliminary project, it 
+    is simpler to use and verify. 
+    */
+
+    // Reading from database sequence file (.psq) an array of char of same length as the query
     string sequencename = argv[1] + string(".psq");
-    fseq = fopen(sequencename.c_str(),"rb");
-    unsigned char substring[len_query+1];
-    fread(&substring,1,len_query,fseq);
+    fsq = fopen(sequencename.c_str(),"rb");
+    if (fsq == NULL){
+        cout << "Opening of 'sequence' file impossible." << endl;
+        exit(1);
+    }
+    unsigned char substring[len_query];
+    fread(&substring,1,len_query,fsq);
 
-
+    // Transforming the array of char into a continued string
     string dbsubstr;
     for (i=0;i<len_query;i++){
         dbsubstr += v[(int)substring[i]];
     }
 
+    // Comparison code between query and string in database
     unsigned char key_bin;
-    int n = len_query;
     int found_pos = 0;
     while (dbsubstr not_eq query){
-        fread(&key_bin,1,1,fseq);
+        fread(&key_bin,1,1,fsq);
         if ((int)key_bin == EOF){
             cout << "Sequence not found" << endl;
             break;
         }
-        // n = insertSorted(substring,n,key_bin,n+1);
-        // n = deleteFirst(substring,n);
         dbsubstr += v[(int)key_bin];
         dbsubstr.erase(0,1);
         found_pos ++;
     }
 
-    cout << "Sequence found !! At pos : " << found_pos << endl ; 
+    cout << "Sequence found !! At pos : " << found_pos << endl ;
 
-    // while ((h = getc(fseq)) != EOF)
-    //     fread()
-    //     if (dbchar == query[1])
+    long int headerTableInitPos = ftell(fin); // Getting the position of the beggining of the Header offset table
+    cout << "Header init : " << headerTableInitPos << endl;
 
+    fseek(fin,(num_seq+1)*4,SEEK_CUR); // The header table is num_seq + 1 long, and each "seq" takes 4 bytes long, hence num_seq*4+1
+    long int sequenceTableInitPos = ftell(fin); // Getting the position of the beggining of the Sequence offset table
+    cout << "Sequence init : " << sequenceTableInitPos << endl;
 
+    // Calculating where in the database the sequence is found (which index)
+    int sequenceOffsetValue = 0;
+    int sequenceIndex = 0;
+    while (sequenceOffsetValue < found_pos){
+        fread(&buffer,1,sob,fin);
+        sequenceOffsetValue = bigToLittle(buffer,sob);
+        sequenceIndex++;
+    }
+    
+    sequenceIndex -- ; //To be consistent : we read then ++ then check, so the good one is one less than the last index returned
+    cout << sequenceIndex << endl ;
 
-    //     dbsubstr[query.length()] = 
-    //     for (i=0;i<query.length();i++){
-    //         for i = 
-    //             find(database(i))
-    //     }
-        
-        // while (fgets(line,MAX_LEN,fquery) != NULL){
-        //     cout << line << endl;
-        // }
-    // 
-    // int i;
-    // for (i=0;i<10;i++){
-    //     fread (&a[i],1,1,fseq);
-    // }
+    // Seeking in the header table the length of the header
+    fseek(fin,headerTableInitPos+4*(sequenceIndex),SEEK_SET);
+    fread(&buffer,1,sob,fin);
+    int startHeaderString = bigToLittle(buffer,sob);
+    fread(&buffer,1,sob,fin);
+    int endHeaderString = bigToLittle(buffer,sob);
+    int lenHeaderString = endHeaderString - startHeaderString;
 
-        
-       /*
-        fread(a,1,10,fseq);
-        fclose (fseq);
-        */
+    // Reading the header string in the header file (.phr)
+    string headername = argv[1] + string(".phr");
+    fhr = fopen(headername.c_str(),"rb");
+    if (fhr == NULL){
+        cout << "Opening of 'header' file impossible." << endl;
+        exit(1);
+    }
+    char headerStringBuffer[lenHeaderString];
+    fseek(fhr,startHeaderString,SEEK_SET);
+    fread(&headerStringBuffer,1,lenHeaderString,fhr);
+
+    // See NCBI BLAST Database format for more information
+    /*
+    switch(headerStringBuffer[6]){
+        case 26: // 1A in hex, 
+            if (headerStringBuffer[7] > 128){
+                char lenlenHeaderTitle = headerStringBuffer[7]-128;
+                int lenHeaderTitle = headerStringBuffer[7+]
+            }
+            char lenHeaderTitle = headerStringBuffer[7];
+    }
+    */
+    
+
+    cout << endl 
+        << startHeaderString << endl
+        << endHeaderString << endl 
+        << lenHeaderString << endl
+        << (int)headerStringBuffer[4] << "\t" << (int)headerStringBuffer[5] << endl
+        << endl;
+
+    fseek(fhr,1434,SEEK_SET);
+    char buffer2;
+    fread(&buffer2,1,1,fhr);
+    cout << (int)buffer2+256 << endl;
 
     fclose(fin);
-    fclose(fseq);
+    fclose(fsq);
     fclose(fquery);
+    fclose(fhr);
     return 0;
 }

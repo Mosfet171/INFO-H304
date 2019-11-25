@@ -1,2 +1,2 @@
-int bigToLittle(unsigned char buffer[4]);
+int bigToLittle(unsigned char buffer[], int n);
 std::string charToString(char* a, int size);
