@@ -10,28 +10,6 @@ for the INFP-H304 course, by Alissa Komino, Jean-Charles Nsangolo and Arkady Mos
 #define MAX_LEN 120
 
 using namespace std;
-
-// Functions to insert at the end and delete the first element of an array, not used for now.
-
-/* 
-int insertSorted(int arr[], int n, int key, int capacity) { 
-    // Cannot insert more elements if n is already more than or equal to capcity 
-    if (n >= capacity) 
-       return n; 
-  
-    arr[n] = key; 
-  
-    return (n + 1);
-}
-
-int deleteFirst(int arr[], int n) { 
-    int i; 
-    for (i = 0; i < n - 1; i++) 
-        arr[i] = arr[i + 1]; 
-  
-    return n - 1; 
-} 
-*/
  
 int main (int argc, char** argv)
 {
@@ -47,11 +25,12 @@ int main (int argc, char** argv)
     FILE * fhr;
     FILE * fquery;
     int i;
-    // char a[10];
     unsigned char buffer[4];
     int sob = sizeof(buffer);
 
-    // Extracting database info from 'index' file
+    // ------------------------------ DATABASE INFO ------------------------------ //
+    // --------------------------------------------------------------------------- //
+    
     string indexname = argv[1]+string(".pin");
     fin = fopen(indexname.c_str(),"rb");
     if (fin == NULL){
@@ -67,9 +46,7 @@ int main (int argc, char** argv)
     string dbtype;
     if (intdbtype == 1) {
         dbtype = "Protein";
-    }
-    else
-    {
+    } else {
         dbtype = "DNA";
     }
     
@@ -90,27 +67,32 @@ int main (int argc, char** argv)
     fread(&buffer,1,sob,fin);
     long int num_seq = bigToLittle(buffer,sob); // Number of sequences
 
-    unsigned long long int num_residue; // Using long long because dealing with a 8 byte int here (and definitely positive)
+    unsigned long long int num_residue; // Using long long because dealing with a 8 byte int here (and definitely positive hence unsigned)
     fread(&num_residue,1,8,fin); // Number of residues
 
     fread(&buffer,1,sob,fin);
     int len_maxseq = bigToLittle(buffer,sob); // Length of longest sequence
 
-    // ---------- CONTROL PART ---------- //
-    cout << endl
+    // ****************************** OUTPUT PART ****************************** //
+        cout << endl
+        << "--------------- DATABASE INFO ---------------" << endl
         << "Version : " << version << endl
         << "DB type : " << dbtype << endl 
-        << "Title length : " << len_title << endl
-        << "File title : " << title << endl 
+        << "DB title : " << title << endl 
         << "Timestamp : " << timestamp << endl
         << "Number of sequences : " << num_seq << endl
         << "Number of residues : " << num_residue << endl
         << "Length of maximum sequence : " << len_maxseq << " residues" << endl
         << endl;
-    // ---------------------------------- //
+
+
+    // ----------------------------- QUERY INFO --------------------------------- //
+    // -------------------------------------------------------------------------- //
 
     // Extracting query sequence
     string queryname = argv[2];
+    cout << "--------------- QUERY INFO ---------------" << endl
+        << "Query file name : " << queryname.c_str() << endl;
     fquery = fopen(queryname.c_str(),"r");
     if (fquery == NULL){
         cout << "Opening of 'query' file impossible." << endl;
@@ -118,8 +100,10 @@ int main (int argc, char** argv)
     }
     if (queryname.substr(queryname.length()-5,5) == "fasta"){
         char querytitle[1000];
+        fgetc(fquery);
         fscanf(fquery,"%[^\n]",querytitle);
-        cout << "Query title : " << querytitle << endl;
+        cout << "Query descritpion : " << querytitle << endl
+            << endl;
     }
 
     // Transforming it into pure continued string (without \n nor \r)
@@ -143,7 +127,9 @@ int main (int argc, char** argv)
 
     int len_query = query.size();
 
+
     // ----------------------------- REAL BUSINESS ----------------------------- //
+    // ------------------------------------------------------------------------- // 
 
     /* This part can obviously be done in another way, as transforming everything to a string from the std::string
     package is maybe not the best option memory-ly speaking; however, at least for the preliminary project, it 
@@ -157,6 +143,7 @@ int main (int argc, char** argv)
         cout << "Opening of 'sequence' file impossible." << endl;
         exit(1);
     }
+    cout << "--------------- SEEKING MATCHES ---------------" << endl;
     unsigned char substring[len_query];
     fread(&substring,1,len_query,fsq);
 
@@ -172,22 +159,21 @@ int main (int argc, char** argv)
     while (dbsubstr not_eq query){
         fread(&key_bin,1,1,fsq);
         if ((int)key_bin == EOF){
-            cout << "Sequence not found" << endl;
+            cout << "Sequence not found !" << endl;
             break;
+            exit(1);
         }
         dbsubstr += v[(int)key_bin];
         dbsubstr.erase(0,1);
         found_pos ++;
     }
+    cout << "Sequence found in database in " << 0 << " seconds" << endl;
+    // Getting the position of the beggining of the Header offset table
+    long int headerTableInitPos = ftell(fin); 
 
-    cout << "Sequence found !! At pos : " << found_pos << endl ;
-
-    long int headerTableInitPos = ftell(fin); // Getting the position of the beggining of the Header offset table
-    cout << "Header init : " << headerTableInitPos << endl;
-
+    // Getting the position of the beggining of the Sequence offset table
     fseek(fin,(num_seq+1)*4,SEEK_CUR); // The header table is num_seq + 1 long, and each "seq" takes 4 bytes long, hence num_seq*4+1
-    long int sequenceTableInitPos = ftell(fin); // Getting the position of the beggining of the Sequence offset table
-    cout << "Sequence init : " << sequenceTableInitPos << endl;
+    long int sequenceTableInitPos = ftell(fin); 
 
     // Calculating where in the database the sequence is found (which index)
     int sequenceOffsetValue = 0;
@@ -198,8 +184,7 @@ int main (int argc, char** argv)
         sequenceIndex++;
     }
     
-    sequenceIndex -- ; //To be consistent : we read then ++ then check, so the good one is one less than the last index returned
-    cout << sequenceIndex << endl ;
+    sequenceIndex -- ; // To be consistent : we read then ++ then check, so the good one is one less than the last index returned
 
     // Seeking in the header table the length of the header
     fseek(fin,headerTableInitPos+4*(sequenceIndex),SEEK_SET);
@@ -254,10 +239,10 @@ int main (int argc, char** argv)
         headerTitle = charToString(headerTitleBuffer,lenHeaderTitle);
     }
     
-    cout << headerTitle << endl
+    cout << "Name of the first exact match : " << headerTitle << endl
         << endl;
 
-
+    // Closing
     fclose(fin);
     fclose(fsq);
     fclose(fquery);

@@ -20,6 +20,30 @@ std::string charToString(char* a, int size)
     return s; 
 } 
 
+// Functions to insert at the end and delete the first element of an array, not used for now.
+
+/* 
+int insertSorted(int arr[], int n, int key, int capacity) { 
+    // Cannot insert more elements if n is already more than or equal to capcity 
+    if (n >= capacity) 
+       return n; 
+  
+    arr[n] = key; 
+  
+    return (n + 1);
+}
+
+int deleteFirst(int arr[], int n) { 
+    int i; 
+    for (i = 0; i < n - 1; i++) 
+        arr[i] = arr[i + 1]; 
+  
+    return n - 1; 
+} 
+*/
+
+// Function to directly decode the BLAST header format, not used for now.
+
 /*
 std::string blastHeaderDecode(char stringBuffer[]){
     int i = 0;
