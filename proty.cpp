@@ -1,5 +1,5 @@
 /* Preliminary Version of the Protein Sequence Alignment Project
-for the INFP-H304 course, by Alissa Komino, Jean-Charles Nsangolo and Arkady Mospan */
+for the INF0-H304 course, by Alissa Komino, Jean-Charles Nsangolo and Arkady Mospan */
 
 #include <iostream>
 #include <cstdio>
