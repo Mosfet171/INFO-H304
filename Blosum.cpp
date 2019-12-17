@@ -60,6 +60,7 @@ void Blosum::init(string fileName)
                             temp *= -1;
                         }
                         m_matrice[p][q] = temp;
+                        //cout << m_matrice[p][q] << endl;
                         neg = false;
                         q++;
                     }

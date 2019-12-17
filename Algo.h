@@ -17,13 +17,14 @@ class Algo
         int bestChoice(int a, int b);
         int scoreCalcul(int p, int q);
         int score();
+        int getMax() const;
 
     private:
         int **m_matrice;
-        int **m_matriceMemory;
+        //int **m_matriceMemory;
         int m_p;
         int m_q;
-        //int m_max;
+        int m_max;
         std::string *m_query;
         std::string *m_target;
         Blosum *m_blosum;

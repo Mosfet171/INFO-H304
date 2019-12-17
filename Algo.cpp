@@ -1,11 +1,12 @@
 #include "Algo.h"
 #include "Blosum.h"
 
+
 #define INDEL 6
 
 using namespace std;
 
-Algo::Algo(string *query, string *target, Blosum *blosum) : m_query(query), m_target(target), m_p((*query).size()), m_q((*target).size()), m_blosum(blosum)//, m_count(0), m_max(0)
+Algo::Algo(string *query, string *target, Blosum *blosum) : m_query(query), m_target(target), m_p((*query).size()), m_q((*target).size()), m_blosum(blosum), m_max(0)//, m_count(0)
 {
     constructionMatrice(); //construction de la matrice de similarité
     valeursMatrice(0,0);
@@ -20,30 +21,25 @@ Algo::~Algo() //destructeur
     for (int i = 0; i < m_p; i++)
     {
          delete[] m_matrice[i];
-         delete[] m_matriceMemory[i];
     }
     delete[] m_matrice;
-    delete[] m_matriceMemory;
 }
 
 //construit une matrice qui contiendra les scores de similartié et une autre qui contiendra les scores d'algo
 void Algo::constructionMatrice()
 {
     m_matrice = new int*[m_p];
-    m_matriceMemory = new int*[m_p];
     for(int i = 0; i < m_p; i++)
     {
         m_matrice[i] = new int[m_q];
-        m_matriceMemory[i] = new int[m_q];
     }
-    for(int i = 0; i < m_p; i++)
+    /*for(int i = 0; i < m_p; i++)
     {
         for(int j = 0; j < m_q; j++)
         {
             m_matrice[i][j] = 0;
-            m_matriceMemory[i][j] = -1; //-1 veut dire que la case (i,j) n'a pas encore été traitée
         }
-    }
+    }*/
 }
 
 //remplissage de la matrice des scores
@@ -53,10 +49,21 @@ void Algo::valeursMatrice(int p, int q)
     for(int i = p; i < m_p; i++)
     {
         m_matrice[i][q] = bestChoice(i, q);
+
+        if(max(m_max, m_matrice[i][q]) == m_matrice[i][q])
+        {
+            m_max = m_matrice[i][q];
+        }
     }
     for(int j = q + 1; j < m_q; j++)
     {
         m_matrice[p][j] = bestChoice(p, j);
+
+        if(max(m_max, m_matrice[p][j]) == m_matrice[p][j])
+        {
+            m_max = m_matrice[p][j];
+            //cout << m_max << endl;
+        }
     }
     if(p < m_p - 1)
     {
@@ -97,56 +104,14 @@ int Algo::bestChoice(int a, int b)
         solution2 = m_matrice[a-1][b] - INDEL;
         solution3 = m_matrice[a][b-1] - INDEL;
     }
+
     solution = max(max(0, solution1), max(solution2, solution3));
+    //cout << solution << endl;
     return solution;
 }
 
-int Algo::scoreCalcul(int p, int q)
+int Algo::getMax() const
 {
-    int sol1(0), sol2(0), sol3(0), sol(0);
-    if(p >= m_p || q >= m_q)
-    {
-    }
-    else
-    {
-            if(m_matriceMemory[p][q] != -1)
-            {
-                sol = m_matriceMemory[p][q];
-            }
-            else if(m_matrice[p][q] == 0)
-            {
-                m_matriceMemory[p][q] = 0;
-            }
-            else
-            {
-                sol1 = scoreCalcul(p+1, q+1);
-                sol2 = scoreCalcul(p, q+1);
-                sol3 = scoreCalcul(p+1, q);
-
-                sol = max(sol1, max(sol2, sol3)) + m_matrice[p][q];
-                m_matriceMemory[p][q] = sol;
-
-                //m_max = max(sol, m_max);
-            }
-    }
-    return sol;
+    return m_max;
 }
-
-//Applique l'algo de SW a chaque case du tableau
-int Algo::score()
-{
-    int temp(0);
-    int maxx(0);
-    for(int i = 0; i < m_p; i++)
-    {
-        for(int j = 0; j < m_q; j++)
-        {
-            temp = scoreCalcul(i,j);
-            maxx = max(temp, maxx);
-        }
-    }
-    return maxx;
-}
-
-
-
+///////////////////////////////////////////////////////////////////////////////////////////
