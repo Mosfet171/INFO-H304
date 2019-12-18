@@ -2,7 +2,7 @@
 #include "Blosum.h"
 
 
-#define INDEL 6
+#define INDEL 10
 
 using namespace std;
 
