@@ -20,12 +20,12 @@ int main(int argc, char** argv)
     char sob = sizeof(buffer);
 
     string pinString = string(argv[2]) + string(".pin");
-    Pin pin(pinString.c_str());//string("uniprot_sprot.fasta")+string(".pin"));
-    //pin.dataData();
+    Pin pin(pinString.c_str());
+    
     FILE * fquery;
-     // Extracting query sequence
-    string queryname = argv[1];//"testproty.fasta"; //"P00533.fasta";
-    //string queryname = "P00533.fasta";
+    
+    string queryname = argv[1];
+    
     cout << "--------------- QUERY INFO ---------------" << endl
         << "Query file name : " << queryname.c_str() << endl;
     fquery = fopen(queryname.c_str(),"r");
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     blosum = new Blosum(blosumString);
 
     string psqString = string(argv[2]) + string(".psq");
-    Psq psq(psqString.c_str()); //"uniprot_sprot.fasta.psq"
+    Psq psq(psqString.c_str());
 
     bool parcours = true;
     string dbsubstr;
@@ -87,11 +87,10 @@ int main(int argc, char** argv)
     auto start = std::chrono::high_resolution_clock::now();
     int nbr = 0;
 
-    while(parcours)
+    while(parcours) //Parcours devient false quand on arrive à la fin du fichier
     {
         dbsubstr = "";
         dbsubstr = psq.algo(found_pos, &parcours);
-        //cout << dbsubstr << endl;
         Algo *algo;
         algo = new Algo(&query, &dbsubstr, blosum);
         nbr++;
@@ -106,7 +105,7 @@ int main(int argc, char** argv)
         int tempPos;
         int tempo;
 
-        for(int k = 0; k < 5; k++)
+        for(int k = 0; k < 5; k++) //On trie les scores max et leurs positions
         {
             if(proviMax > ranking[k])
             {
