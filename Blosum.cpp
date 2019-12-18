@@ -26,7 +26,6 @@ int Blosum::score(char a, char b) const
 void Blosum::init(string fileName)
 {
     string line("");
-    //int const m(24);
 
     int position(0);
     int pre_position(0);
@@ -44,7 +43,7 @@ void Blosum::init(string fileName)
         while(getline(file, line) && p < TAILLE)
         {
             position = file.tellg();
-            if(line[0] != '#')
+            if(line[0] != '#') //on ignore les lignes commençant par #
             {
                 q = 0;
                 delta = position - pre_position;
@@ -60,7 +59,6 @@ void Blosum::init(string fileName)
                             temp *= -1;
                         }
                         m_matrice[p][q] = temp;
-                        //cout << m_matrice[p][q] << endl;
                         neg = false;
                         q++;
                     }
@@ -88,7 +86,7 @@ void Blosum::init(string fileName)
     }
 }
 
-int Blosum::preScore(char c) const
+int Blosum::preScore(char c) const //donne le numéro de la ligne ou colonne ou se trouve la lettre envoyée
 {
     int position = 23;
     switch(c)
@@ -166,8 +164,7 @@ int Blosum::preScore(char c) const
             position = 23;
             break;
         default:
-            //cout << "il y a un probleme    " << (int)c << endl;
-            position = 23; //ATTENTION
+            position = 23; //En cas de problème on suppose qu'on a *
             break;
     }
     return position;
