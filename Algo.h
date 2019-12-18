@@ -13,7 +13,7 @@ class Algo
         ~Algo();
 
         void constructionMatrice();
-        void valeursMatrice(int p, int q);
+        void valeursMatrice();
         int bestChoice(int a, int b);
         int scoreCalcul(int p, int q);
         int score();
