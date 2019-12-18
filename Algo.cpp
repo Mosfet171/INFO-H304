@@ -36,7 +36,7 @@ void Algo::constructionMatrice()
 }
 
 //remplissage de la matrice des scores
-void Algo::valeursMatrice(int p, int q)
+void Algo::valeursMatrice()
 {
     for(int i = 0; i < m_p; i ++)
     {
