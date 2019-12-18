@@ -13,7 +13,7 @@ Pin::~Pin()
 {
 }
 
-void Pin::dataData()
+void Pin::dataData() //lit les infos de base sur la base de données
 {
     unsigned char buffer[4];
     char sob = sizeof(buffer);
@@ -59,16 +59,16 @@ void Pin::dataData()
 
 }
 
-int Pin::tell()
+int Pin::tell() //position du curseur virtuel
 {
     return ftell(m_file);
 }
-void Pin::seek()
+void Pin::seek() //change la position du curseur virtuel en utilisant nombre de sequence
 {
     fseek(m_file,(m_num_seq+1)*4,SEEK_CUR);
 }
 
-void Pin::read(char *ptr, int sob)
+void Pin::read(char *ptr, int sob) //lit un élément dans le fichier .pin
 {
     fread(ptr, 1, sob, m_file);
 }
