@@ -18,17 +18,13 @@ string Psq::algo(int *found_pos, bool *parcours)
     //cout << "yo" << endl;
     char v[28] = {'-','A','B','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','X','Y','Z','U','*','Q','J'};
 
-    //cout << "yo" << endl;
-
-    // Comparison code between query and string in database
+    
     unsigned char key_bin;
-    //int found_pos = 0;
 
     string dbsubstr = "";
-    //int test = 0;
 
     int j = 0;
-    while(fread(&key_bin,1,1,m_file) != 0)
+    while(fread(&key_bin,1,1,m_file) != 0) //Tant qu'on a pas de - on continue d'extraire des "caractères"
     {
         if((int)key_bin != 0)
         {
